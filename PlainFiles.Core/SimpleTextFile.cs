@@ -13,14 +13,12 @@ public class SimpleTextFile
 
         _path = path;
 
-        // Ensure directory exists
         var directory = Path.GetDirectoryName(_path);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        // Create file if it doesn't exist
         if (!File.Exists(_path))
         {
             using (File.Create(_path))

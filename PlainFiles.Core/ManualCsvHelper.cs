@@ -46,7 +46,6 @@ public class ManualCsvHelper
 
         if (!File.Exists(path))
         {
-            // Create an empty file and close it immediately
             using var fs = File.Create(path);
         }
     }
