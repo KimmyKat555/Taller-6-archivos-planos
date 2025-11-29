@@ -5,7 +5,7 @@ public class ManualCsvHelper
     public void WriteCsv(string path, List<string[]> records)
     {
         if (string.IsNullOrWhiteSpace(path))
-            throw new ArgumentException("El path no puede ser nulo o vacío.", nameof(path));
+            throw new ArgumentException("The path cannot be null or empty.", nameof(path));
 
         if (records is null)
             throw new ArgumentNullException(nameof(records));
@@ -23,7 +23,7 @@ public class ManualCsvHelper
     public List<string[]> ReadCsv(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
-            throw new ArgumentException("El path no puede ser nulo o vacío.", nameof(path));
+            throw new ArgumentException("The path cannot be null or empty.", nameof(path));
 
         EnsureFileAndDirectory(path);
 

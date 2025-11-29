@@ -1,31 +1,25 @@
 ﻿using PlainFiles.Core;
-using System.IO; // Necesario para trabajar con archivos como Users.txt
+using System.IO;
 
 public class Program
 {
-    // ----------------------------------------------------
-    // 1. VARIABLES ESTÁTICAS GLOBALES (Ahora son miembros estáticos de la clase Program)
-    // ----------------------------------------------------
+
     static List<Person> people = new List<Person>();
     static ManualCsvHelper manualCsv = new ManualCsvHelper();
     static string? listName = null;
     static string? LoggedInUser = null;
 
-    // ----------------------------------------------------
-    // 2. PUNTO DE ENTRADA PRINCIPAL (Main)
-    // ----------------------------------------------------
     public static void Main(string[] args)
     {
-        // Cargar usuarios y ejecutar autenticación
         var userList = LoadUsers();
 
         if (!Authenticate(userList))
         {
-            Console.WriteLine("Saliendo del programa por fallas de autenticación.");
-            return; // Detiene el programa si falla la autenticación
+            Console.WriteLine("Exiting the program. Authentication failed.");
+            return;
         }
 
-        Console.Write("Digite el nombre de la lista (por defecto 'people'): ");
+        Console.Write("Write the list name or please ENTER for 'people' by default: ");
         listName = Console.ReadLine();
         if (string.IsNullOrEmpty(listName))
         {
@@ -35,23 +29,22 @@ public class Program
         var helper = new NugetCsvHelper();
         try
         {
-            // Cargar los datos como List<Person>
             people = helper.Read($"{listName}.csv").ToList();
         }
         catch (FileNotFoundException)
         {
-            Console.WriteLine($"Advertencia: El archivo '{listName}.csv' no se encontró. Se creará una lista vacía.");
+            Console.WriteLine($"Warning: The file '{listName}.csv' was not found. An empty list will be created.");
             people = new List<Person>();
         }
         catch (Exception ex)
         {
-             Console.WriteLine($"Error al cargar el archivo: {ex.Message}");
+             Console.WriteLine($"Error loading the file: {ex.Message}");
              people = new List<Person>();
         }
 
         foreach (var person in people)
         {
-            Console.WriteLine($"ID: {person.Id}, Nombre: {person.Name}, Balance: {person.Balance:C}");
+            Console.WriteLine($"ID: {person.Id}, Name: {person.Name}, Balance: {person.Balance:C}");
         }
 
         var option = string.Empty;
@@ -73,7 +66,7 @@ public class Program
 
                 case "3":
                     SaveFile(people, listName);
-                    Console.WriteLine("Archivo guardado.");
+                    Console.WriteLine("Saved file.");
                     break;
 
                 case "4":
@@ -93,72 +86,72 @@ public class Program
                     break;
 
                 case "0":
-                    Console.WriteLine("Saliendo...");
+                    Console.WriteLine("Exiting...");
                     break;
 
                 default:
-                    Console.WriteLine("Opción no válida.");
+                    Console.WriteLine("Option not valid.");
                     break;
             }
         } while (option != "0");
-    } // Fin de Main
-
-    // ----------------------------------------------------
-    // 3. FUNCIONES AUXILIARES DE PERSONAS
-    // ----------------------------------------------------
-
+    }
     static void SortData()
     {
         int order;
         do
         {
-            Console.Write("Por cual campo desea ordenar 0. Nombre, 1. Apellido, 2. Saldo? ");
+            Console.Write("Select what you want to order:");
+            Console.Write("0. Name");
+            Console.Write("1. Last name");
+            Console.Write("2. Balance");
             var orderString = Console.ReadLine();
             int.TryParse(orderString, out order);
             if (order < 0 || order > 2)
             {
-                Console.WriteLine("Orden no válido. Intente de nuevo.");
+                Console.WriteLine("Invalid order. Try again.");
             }
         } while (order < 0 || order > 2);
 
         int type;
         do
         {
-            Console.Write("Desea ordenar 0. Ascendente, 1. Descendente?");
+            Console.Write("Select the way you want to order:");
+            Console.Write("0. Ascending");
+            Console.Write("1. Descending");
             var typeString = Console.ReadLine();
             int.TryParse(typeString, out type);
             if (type < 0 || type > 1)
             {
-                Console.WriteLine("Orden no válido. Intente de nuevo.");
+                Console.WriteLine("Invalid order. Try again.");
             }
         } while (type < 0 || type > 1);
 
         people.Sort((a, b) =>
         {
             int cmp;
-            if (order == 2) // Saldo (Balance)
+            if (order == 2)
             {
                 cmp = a.Balance.CompareTo(b.Balance);
             }
-            else if (order == 1) // Apellido
+            else if (order == 1)
             {
                 cmp = string.Compare(a.LastName, b.LastName, StringComparison.OrdinalIgnoreCase);
             }
-            else // order == 0: Nombre
+            else 
             {
                 cmp = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
             }
 
-            return type == 0 ? cmp : -cmp; // 0 = ascendente, 1 = descendente
+            return type == 0 ? cmp : -cmp; 
         });
 
-        Console.WriteLine("Datos ordenados.");
+        Console.WriteLine("Data sorted.");
     }
 
     static void ListPeople()
     {
-        Console.WriteLine("\n--- Lista de Personas ---");
-        Console.WriteLine($"{"ID",-5}|{"Nombres",-15}|{"Apellidos",-15}|{"Teléfono",-15}|{"Ciudad",-15}|{"Balance",-10}");
+        Console.WriteLine("\n--- List of people ---");
+        Console.WriteLine($"{"ID",-5}|{"Name",-15}|{"LastName",-15}|{"Phone",-15}|{"City",-15}|{"Balance",-10}");
         Console.WriteLine(new string('-', 80));
         foreach (var person in people)
         {
@@ -168,19 +161,18 @@ public class Program
 
     static void AddPerson()
     {
-        Console.WriteLine("\n--- Adicionar Persona ---");
+        Console.WriteLine("\n--- Add person ---");
 
-        // 1. Validar ID (Único y Numérico)
         int newId = 0;
         bool idIsValid = false;
         do
         {
-            Console.Write("Digite el ID: ");
+            Console.Write("Enter ID: ");
             if (int.TryParse(Console.ReadLine(), out newId))
             {
                 if (people.Any(p => p.Id == newId))
                 {
-                    Console.WriteLine("Error: El ID ya existe. Debe ser único.");
+                    Console.WriteLine("Error: ID already exists. Must be unique.");
                 }
                 else
                 {
@@ -189,52 +181,47 @@ public class Program
             }
             else
             {
-                Console.WriteLine("Error: El ID debe ser un número.");
+                Console.WriteLine("Error: El ID must be a number.");
             }
         } while (!idIsValid);
 
-        // 2. Validar Nombres (No vacío)
         string name = string.Empty;
         do
         {
-            Console.Write("Digite el Nombre: ");
+            Console.Write("Enter name: ");
             name = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(name))
             {
-                Console.WriteLine("Error: Debe ingresar el nombre.");
+                Console.WriteLine("Error: Name is required.");
             }
         } while (string.IsNullOrWhiteSpace(name));
 
-        // 3. Validar Apellidos (No vacío)
         string lastName = string.Empty;
         do
         {
-            Console.Write("Digite el Apellido: ");
+            Console.Write("Enter LastName: ");
             lastName = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(lastName))
             {
-                Console.WriteLine("Error: Debe ingresar el apellido.");
+                Console.WriteLine("Error: LastName is required.");
             }
         } while (string.IsNullOrWhiteSpace(lastName));
 
-        // 4. Validar Teléfono (Válido/Numérico)
         string phone = string.Empty;
         do
         {
-            Console.Write("Digite el Teléfono: ");
+            Console.Write("Enter Phone: ");
             phone = Console.ReadLine() ?? string.Empty;
-            // Validación básica: solo contiene dígitos y tiene una longitud razonable (7-15)
+
             if (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{7}$"))
             {
-                Console.WriteLine("Error: El teléfono debe contener solo números y tener una longitud válida de 7 dígitos. Try again");
+                Console.WriteLine("Error: Phone must contain only numbers and have a valid length of 7 digits. Try again");
             }
         } while (!System.Text.RegularExpressions.Regex.IsMatch(phone, @"^\d{7}$"));
-
-        // 5. Ciudad 
-        Console.Write("Digite la Ciudad: ");
+ 
+        Console.Write("Enter the city: ");
         string city = Console.ReadLine() ?? string.Empty;
 
-        // 6. Validar Saldo/Balance (Numérico Positivo)
         decimal balance = 0;
         bool balanceIsValid = false;
         do
@@ -246,11 +233,10 @@ public class Program
             }
             else
             {
-                Console.WriteLine("Error: El saldo debe ser un número positivo o cero.");
+                Console.WriteLine("Error: Balance must be a positive number or zero.");
             }
         } while (!balanceIsValid);
 
-        // Crear la nueva persona
         var newPerson = new Person
         {
             Id = newId,
@@ -262,9 +248,8 @@ public class Program
         };
 
         people.Add(newPerson);
-        Console.WriteLine("Persona añadida exitosamente.");
+        Console.WriteLine("Person added successfully.");
 
-        // Registrar en el Log
         using (var logger = new LogWriter("log.txt"))
         {
             logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Añadir Persona: ID={newId}, Nombre={name}");
@@ -273,10 +258,10 @@ public class Program
 
     static void DeletePerson()
     {
-        Console.Write("Digite el ID de la persona a borrar: ");
+        Console.Write("Enter the ID of the person to delete: ");
         if (!int.TryParse(Console.ReadLine(), out var idToDelete))
         {
-            Console.WriteLine("Error: Debe ingresar un ID numérico.");
+            Console.WriteLine("Error: ID must be a number.");
             return;
         }
 
@@ -284,20 +269,19 @@ public class Program
 
         if (personToRemove == null)
         {
-            Console.WriteLine($"No se encontró la persona con ID: {idToDelete}.");
+            Console.WriteLine($"Person with ID: {idToDelete}. Was not found.");
             return;
         }
 
-        Console.WriteLine("\nDatos de la persona a eliminar:");
-        Console.WriteLine($"ID: {personToRemove.Id}, Nombre: {personToRemove.Name} {personToRemove.LastName}, Ciudad: {personToRemove.City}, Saldo: {personToRemove.Balance:C}");
-        Console.Write("¿Desea borrar esta persona (Y/N)?");
+        Console.WriteLine("\nData of the person to delete:");
+        Console.WriteLine($"ID: {personToRemove.Id}, Full Name: {personToRemove.Name} {personToRemove.LastName}, City {personToRemove.City}, Balance: {personToRemove.Balance:C}");
+        Console.Write("¿Do you want to delete this person (Y/N)?");
 
         if (Console.ReadLine()?.ToUpper() == "Y")
         {
             people.Remove(personToRemove);
-            Console.WriteLine("Persona eliminada.");
+            Console.WriteLine("Person deleted.");
 
-            // Registrar en el Log
             using (var logger = new LogWriter("log.txt"))
             {
                 logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Eliminar Persona: ID={idToDelete}, Nombre={personToRemove.Name}");
@@ -305,19 +289,18 @@ public class Program
         }
         else
         {
-            Console.WriteLine("Operación cancelada.");
+            Console.WriteLine("Operation cancelled.");
         }
     }
-    
-    // Implementación de la Edición (Opción 6)
+
     static void EditPerson()
     {
-        Console.WriteLine("\n--- Editar Persona ---");
-        Console.Write("Digite el ID de la persona a editar: ");
+        Console.WriteLine("\n--- Edit Person ---");
+        Console.Write("Enter the ID of the person to edit: ");
 
         if (!int.TryParse(Console.ReadLine(), out var idToEdit))
         {
-            Console.WriteLine("Error: Debe ingresar un ID numérico.");
+            Console.WriteLine("Error: ID must be a number.");
             return;
         }
 
@@ -325,39 +308,35 @@ public class Program
 
         if (personToEdit == null)
         {
-            Console.WriteLine($"No se encontró la persona con ID: {idToEdit}.");
+            Console.WriteLine($"Person with ID: {idToEdit} Was not found.");
             return;
         }
 
-        Console.WriteLine($"\nEditando a {personToEdit.Name} {personToEdit.LastName}. Presione ENTER para mantener el valor actual.");
+        Console.WriteLine($"\nEditing {personToEdit.Name} {personToEdit.LastName}. Press ENTER to keep the current value.");
 
-        // --- 1. Nombre ---
-        Console.Write($"Nombre actual ({personToEdit.Name}): ");
+        Console.Write($"Current name ({personToEdit.Name}): ");
         var newName = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(newName))
         {
             personToEdit.Name = newName;
         }
 
-        // --- 2. Apellido ---
-        Console.Write($"Apellido actual ({personToEdit.LastName}): ");
+        Console.Write($"Current Last Name ({personToEdit.LastName}): ");
         var newLastName = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(newLastName))
         {
             personToEdit.LastName = newLastName;
         }
-
-        // --- 3. Teléfono --- (Validación con opción de dejar vacío)
         string newPhone = string.Empty;
         bool phoneIsValid = false;
         do
         {
-            Console.Write($"Teléfono actual ({personToEdit.Phone}): ");
+            Console.Write($"Current Phone ({personToEdit.Phone}): ");
             newPhone = Console.ReadLine() ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(newPhone))
             {
-                phoneIsValid = true; // Permite dejar vacío (mantener valor anterior)
+                phoneIsValid = true;
             }
             else if (System.Text.RegularExpressions.Regex.IsMatch(newPhone, @"^\d{7}$"))
             {
@@ -366,29 +345,27 @@ public class Program
             }
             else
             {
-                Console.WriteLine("Error: El teléfono debe contener solo números y tener una longitud válida de 7 digitos. Intente de nuevo.");
+                Console.WriteLine("Error: Phone must contain only numbers and have a valid length of 7 digits. Try again.");
             }
         } while (!phoneIsValid);
 
-        // --- 4. Ciudad ---
-        Console.Write($"Ciudad actual ({personToEdit.City}): ");
+        Console.Write($"Current City ({personToEdit.City}): ");
         var newCity = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(newCity))
         {
             personToEdit.City = newCity;
         }
 
-        // --- 5. Saldo/Balance --- (Validación con opción de dejar vacío)
         decimal newBalance = 0;
         bool balanceIsValid = false;
         do
         {
-            Console.Write($"Saldo actual ({personToEdit.Balance:C}): ");
+            Console.Write($"Current Balance ({personToEdit.Balance:C}): ");
             var balanceString = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(balanceString))
             {
-                balanceIsValid = true; // Permite dejar vacío (mantener valor anterior)
+                balanceIsValid = true;
             }
             else if (decimal.TryParse(balanceString, out newBalance) && newBalance >= 0)
             {
@@ -397,25 +374,22 @@ public class Program
             }
             else
             {
-                Console.WriteLine("Error: El saldo debe ser un número positivo o cero. Intente de nuevo.");
+                Console.WriteLine("Error: Balance must be a positive number or zero. Try again.");
             }
         } while (!balanceIsValid);
 
-        Console.WriteLine("Persona actualizada exitosamente.");
+        Console.WriteLine("Person updated successfully.");
 
-        // Registrar en el Log
         using (var logger = new LogWriter("log.txt"))
         {
             logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Editar Persona: ID={idToEdit}, Nombre={personToEdit.Name}");
         }
     }
 
-    // Implementación del Informe por Ciudad (Opción 7)
     static void ShowReportByCity()
     {
-        Console.WriteLine("\n--- Informe de Saldo por Ciudad ---");
+        Console.WriteLine("\n--- Balance report by city ---");
 
-        // Agrupamos y ordenamos por ciudad
         var report = people
             .GroupBy(p => p.City)
             .OrderBy(g => g.Key) 
@@ -425,31 +399,27 @@ public class Program
 
         foreach (var cityGroup in report)
         {
-            // Calculamos el subtotal por la ciudad
+
             decimal subtotal = cityGroup.Sum(p => p.Balance);
             totalGeneral += subtotal;
 
-            Console.WriteLine($"\nCiudad: {cityGroup.Key}");
-            Console.WriteLine($"{"ID",-5}|{"Nombres",-15}|{"Apellidos",-15}|{"Saldo",-10}");
+            Console.WriteLine($"\nCity: {cityGroup.Key}");
+            Console.WriteLine($"{"ID",-5}|{"Name",-15}|{"LastName",-15}|{"Balance",-10}");
             Console.WriteLine(new string('-', 45));
 
-            // Listar personas de esta ciudad
             foreach (var person in cityGroup.OrderBy(p => p.Name))
             {
                 Console.WriteLine($"{person.Id,-5}|{person.Name,-15}|{person.LastName,-15}|{person.Balance,-10:C}");
             }
 
-            // Mostrar Subtotal
             Console.WriteLine(new string('=', 45));
             Console.WriteLine($"Total: {cityGroup.Key,-20}{subtotal,-20:C}");
         }
 
-        // Mostrar Total General
         Console.WriteLine($"\n{new string('=', 45)}");
         Console.WriteLine($"Total General: {"",-19}{totalGeneral,-20:C}");
         Console.WriteLine(new string('=', 45));
 
-        // Registrar en el Log
         using (var logger = new LogWriter("log.txt"))
         {
             logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Generó el informe de subtotales por ciudad.");
@@ -460,66 +430,51 @@ public class Program
     {
         Console.WriteLine();
         Console.WriteLine();
-        Console.WriteLine("1. Adicionar.");
-        Console.WriteLine("2. Mostrar.");
-        Console.WriteLine("3. Grabar.");
-        Console.WriteLine("4. Eliminar.");
-        Console.WriteLine("5. Ordenar.");
-        Console.WriteLine("6. Editar.");
-        Console.WriteLine("7. Informe por Ciudad.");
-        Console.WriteLine("0. Salir.");
-        Console.Write("Seleccione una opción: ");
+        Console.WriteLine("1. Add.");
+        Console.WriteLine("2. Show data.");
+        Console.WriteLine("3. Save data.");
+        Console.WriteLine("4. Delete");
+        Console.WriteLine("5. Order.");
+        Console.WriteLine("6. Edit.");
+        Console.WriteLine("7. Report by city.");
+        Console.WriteLine("0. Exit.");
+        Console.Write("Select and option: ");
         return Console.ReadLine() ?? string.Empty;
     }
 
-    // Acepta List<Person> y convierte a líneas de texto para grabar, incluyendo el encabezado.
     static void SaveFile(List<Person> peopleToSave, string? listName)
     {
         var lines = new List<string>();
 
-        // 1. Agregar el Encabezado (HEADER)
-        // Esto asegura que la primera línea siempre sea el formato que NugetCsvHelper espera.
         lines.Add("Id,Name,LastName,Phone,City,Balance");
 
-        // 2. Mapear List<Person> a líneas de texto CSV
         foreach (var person in peopleToSave)
         {
-            // Nota: Aquí no usamos el ManualCsvHelper. Escribimos directamente en el formato CSV.
-            // Asegúrate de que los datos no tengan comas internas.
+
             lines.Add($"{person.Id},{person.Name},{person.LastName},{person.Phone},{person.City},{person.Balance}");
         }
-
-        // 3. Escribir todas las líneas (Encabezado + Datos) al archivo, sobrescribiendo el contenido anterior.
         try
         {
             File.WriteAllLines($"{listName}.csv", lines);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al escribir en el archivo: {ex.Message}");
-            // No registramos en el log porque falló la escritura.
+            Console.WriteLine($"Error writing to file: {ex.Message}");
             return;
         }
 
-        Console.WriteLine("Archivo guardado.");
+        Console.WriteLine("File saved.");
 
-        // Registrar en el Log
         using (var logger = new LogWriter("log.txt"))
         {
             logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Archivo '{listName}.csv' guardado.");
         }
     }
-
-    // ----------------------------------------------------
-    // 4. FUNCIONES DE AUTENTICACIÓN
-    // ----------------------------------------------------
-
     static List<User> LoadUsers(string path = "Users.txt")
     {
         var users = new List<User>();
         if (!File.Exists(path))
         {
-            // Creamos un usuario por defecto si no existe el archivo
             users.Add(new User { Username = "admin", Password = "admin", IsActive = true });
             SaveUsers(users); 
             return users;
@@ -546,7 +501,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al leer Users.txt: {ex.Message}");
+            Console.WriteLine($"Error reading Users.txt: {ex.Message}");
         }
         return users;
     }
@@ -567,17 +522,16 @@ public class Program
         int attempts = 0;
 
         Console.WriteLine("===============================");
-        Console.WriteLine("     MÓDULO DE AUTENTICACIÓN     ");
+        Console.WriteLine("         AUTHENTICATION    ");
         Console.WriteLine("===============================");
 
         while (attempts < maxAttempts)
         {
-            Console.Write("Usuario: ");
+            Console.Write("User: ");
             string username = Console.ReadLine() ?? string.Empty;
 
-            // Versión Segura (Usa tu función ReadPassword() para ocultar la clave)
-            Console.Write("Contraseña: ");
-            string password = ReadPassword() ?? string.Empty; // <-- Usar ReadPassword()
+            Console.Write("Password: ");
+            string password = ReadPassword() ?? string.Empty; 
 
             User? user = users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
 
@@ -585,32 +539,30 @@ public class Program
             {
                 if (!user.IsActive)
                 {
-                    Console.WriteLine("Error: Este usuario está bloqueado. Contacte al administrador.");
+                    Console.WriteLine("Error: This user is blocked. Contact administrator.");
                     return false;
                 }
 
                 if (user.Password == password)
                 {
-                    // AUTENTICACIÓN EXITOSA
-                    Console.WriteLine("\n¡Bienvenido!");
+                    Console.WriteLine("\n¡Welcome");
                     LoggedInUser = user.Username; 
                     return true;
                 }
             }
 
-            // Credenciales incorrectas o usuario no encontrado/inactivo
             attempts++;
             if (attempts < maxAttempts)
             {
-                Console.WriteLine($"Error de autenticación. Intento {attempts} de {maxAttempts}.");
+                Console.WriteLine($"Authentication error. Attempt {attempts} of {maxAttempts}.");
             }
             else
             {
-                Console.WriteLine($"\nHa excedido los {maxAttempts} intentos.");
+                Console.WriteLine($"\nYou have exceeded the {maxAttempts} attempts.");
 
                 if (user != null)
                 {
-                    Console.WriteLine($"El usuario '{username}' ha sido bloqueado en el sistema.");
+                    Console.WriteLine($"User '{username}' Has been blocked in the system .");
                     user.IsActive = false; 
                     SaveUsers(users); 
                 }
@@ -629,7 +581,6 @@ public class Program
             {
                 key = Console.ReadKey(true);
 
-                // Oculta el carácter pero permite backspace
                 if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
                 {
                     password += key.KeyChar;
@@ -640,12 +591,12 @@ public class Program
                     if (key.Key == ConsoleKey.Backspace && password.Length > 0)
                     {
                         password = password.Substring(0, (password.Length - 1));
-                        Console.Write("\b \b"); // Mueve el cursor hacia atrás y borra el *
+                        Console.Write("\b \b");
                     }
                 }
             } while (key.Key != ConsoleKey.Enter);
 
-            Console.WriteLine(); // Salto de línea después de presionar Enter
+            Console.WriteLine();
             return password;
         }
     }

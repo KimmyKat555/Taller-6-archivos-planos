@@ -6,16 +6,15 @@ public class LogWriter : IDisposable
 
     public LogWriter(string path)
     {
-        // Se asegura que el archivo se abre o crea, y que se añaden nuevos logs al final (append: true)
         _writer = new StreamWriter(path, append: true)
         {
-            AutoFlush = true // Hace que cada llamada a WriteLine se escriba inmediatamente en el disco.
+            AutoFlush = true 
         };
     }
 
     public void WriteLog(string user, string level, string message)
     {
-        var timestamp = DateTime.Now.ToString("s"); // Formato ISO 8601
+        var timestamp = DateTime.Now.ToString("s"); 
 
         _writer.WriteLine($"[{timestamp}] - [USER: {user}] - [{level}] - {message}");
     }
