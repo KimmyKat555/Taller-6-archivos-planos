@@ -66,7 +66,6 @@ public class Program
 
                 case "3":
                     SaveFile(people, listName);
-                    Console.WriteLine("Saved file.");
                     break;
 
                 case "4":
@@ -100,10 +99,11 @@ public class Program
         int order;
         do
         {
-            Console.Write("Select what you want to order:");
-            Console.Write("0. Name");
-            Console.Write("1. Last name");
-            Console.Write("2. Balance");
+            Console.Write("\n0. Name");
+            Console.Write("\n1. Last name");
+            Console.Write("\n2. Balance");
+            Console.Write("\nSelect what you want to order: ");
+
             var orderString = Console.ReadLine();
             int.TryParse(orderString, out order);
             if (order < 0 || order > 2)
@@ -115,9 +115,9 @@ public class Program
         int type;
         do
         {
-            Console.Write("Select the way you want to order:");
-            Console.Write("0. Ascending");
-            Console.Write("1. Descending");
+            Console.Write("\n0. Ascending");
+            Console.Write("\n1. Descending");
+            Console.Write("\nSelect the way you want to order: ");
             var typeString = Console.ReadLine();
             int.TryParse(typeString, out type);
             if (type < 0 || type > 1)
@@ -150,18 +150,29 @@ public class Program
 
     static void ListPeople()
     {
-        Console.WriteLine("\n--- List of people ---");
-        Console.WriteLine($"{"ID",-5}|{"Name",-15}|{"LastName",-15}|{"Phone",-15}|{"City",-15}|{"Balance",-10}");
-        Console.WriteLine(new string('-', 80));
+        Console.WriteLine("\n======= List of People =======");
+
         foreach (var person in people)
         {
-            Console.WriteLine($"{person.Id,-5}|{person.Name,-15}|{person.LastName,-15}|{person.Phone,-15}|{person.City,-15}|{person.Balance,-10:C}");
+            Console.WriteLine($"{person.Id}");
+
+            Console.WriteLine($"  {person.Name} {person.LastName}");
+
+            Console.WriteLine($"  Phone: {person.Phone}");
+
+            Console.WriteLine($"  City: {person.City}");
+
+            Console.WriteLine($"  Balance: \t{person.Balance:C}");
+
+            Console.WriteLine(new string('-', 30));
         }
+
+        Console.WriteLine("================================");
     }
 
     static void AddPerson()
     {
-        Console.WriteLine("\n--- Add person ---");
+        Console.WriteLine("\n======= Add Person =======");
 
         int newId = 0;
         bool idIsValid = false;
@@ -252,7 +263,7 @@ public class Program
 
         using (var logger = new LogWriter("log.txt"))
         {
-            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Añadir Persona: ID={newId}, Nombre={name}");
+            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Added Person: ID={newId}, Name={name}");
         }
     }
 
@@ -275,7 +286,7 @@ public class Program
 
         Console.WriteLine("\nData of the person to delete:");
         Console.WriteLine($"ID: {personToRemove.Id}, Full Name: {personToRemove.Name} {personToRemove.LastName}, City {personToRemove.City}, Balance: {personToRemove.Balance:C}");
-        Console.Write("¿Do you want to delete this person (Y/N)?");
+        Console.Write("¿Do you want to delete this person (Y/N)? ");
 
         if (Console.ReadLine()?.ToUpper() == "Y")
         {
@@ -284,7 +295,7 @@ public class Program
 
             using (var logger = new LogWriter("log.txt"))
             {
-                logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Eliminar Persona: ID={idToDelete}, Nombre={personToRemove.Name}");
+                logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Deleted Person: ID={idToDelete}, Name={personToRemove.Name}");
             }
         }
         else
@@ -292,10 +303,9 @@ public class Program
             Console.WriteLine("Operation cancelled.");
         }
     }
-
     static void EditPerson()
     {
-        Console.WriteLine("\n--- Edit Person ---");
+        Console.WriteLine("\n======= Edit Person =======");
         Console.Write("Enter the ID of the person to edit: ");
 
         if (!int.TryParse(Console.ReadLine(), out var idToEdit))
@@ -382,50 +392,53 @@ public class Program
 
         using (var logger = new LogWriter("log.txt"))
         {
-            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Editar Persona: ID={idToEdit}, Nombre={personToEdit.Name}");
+            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Edited Person: ID={idToEdit}, Name={personToEdit.Name}");
         }
     }
-
     static void ShowReportByCity()
     {
-        Console.WriteLine("\n--- Balance report by city ---");
+
+        Console.WriteLine("\n======= Report by City =======");
 
         var report = people
             .GroupBy(p => p.City)
-            .OrderBy(g => g.Key) 
+            .OrderBy(g => g.Key)
             .ToList();
 
         decimal totalGeneral = 0;
 
         foreach (var cityGroup in report)
         {
-
             decimal subtotal = cityGroup.Sum(p => p.Balance);
             totalGeneral += subtotal;
 
             Console.WriteLine($"\nCity: {cityGroup.Key}");
-            Console.WriteLine($"{"ID",-5}|{"Name",-15}|{"LastName",-15}|{"Balance",-10}");
-            Console.WriteLine(new string('-', 45));
+
+            Console.WriteLine($"{"ID",-6}{"Name",-14}{"LastName",-18}{"Balance",-12}");
+
+            Console.WriteLine($"{"=====",-6}{"===========",-14}{"==============",-18}{"==========",-12}");
 
             foreach (var person in cityGroup.OrderBy(p => p.Name))
             {
-                Console.WriteLine($"{person.Id,-5}|{person.Name,-15}|{person.LastName,-15}|{person.Balance,-10:C}");
+                Console.WriteLine($"{person.Id,-6}{person.Name,-14}{person.LastName,-18}{person.Balance,-12:C}");
             }
 
-            Console.WriteLine(new string('=', 45));
-            Console.WriteLine($"Total: {cityGroup.Key,-20}{subtotal,-20:C}");
+            Console.WriteLine($"{"",-38}=========="); 
+
+            Console.WriteLine($"{"Total: " + cityGroup.Key,-38}{subtotal,-12:C}");
         }
 
-        Console.WriteLine($"\n{new string('=', 45)}");
-        Console.WriteLine($"Total General: {"",-19}{totalGeneral,-20:C}");
-        Console.WriteLine(new string('=', 45));
+        Console.WriteLine($"\n{"",-38}============"); 
+
+        Console.WriteLine($"{"Grand Total:",-38}{totalGeneral,-12:C}");
+
+        Console.WriteLine($"{"",-38}============");
 
         using (var logger = new LogWriter("log.txt"))
         {
-            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Generó el informe de subtotales por ciudad.");
+            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Generated balance report by city.");
         }
     }
-
     static string MyMenu()
     {
         Console.WriteLine();
@@ -438,7 +451,7 @@ public class Program
         Console.WriteLine("6. Edit.");
         Console.WriteLine("7. Report by city.");
         Console.WriteLine("0. Exit.");
-        Console.Write("Select and option: ");
+        Console.Write("Select an option: ");
         return Console.ReadLine() ?? string.Empty;
     }
 
@@ -467,7 +480,7 @@ public class Program
 
         using (var logger = new LogWriter("log.txt"))
         {
-            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"Archivo '{listName}.csv' guardado.");
+            logger.WriteLog(LoggedInUser ?? "SYSTEM", "INFO", $"File '{listName}.csv' saved.");
         }
     }
     static List<User> LoadUsers(string path = "Users.txt")
